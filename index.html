@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/jquery"></script>
+
+    <link href="./emotes/jquery.cssemoticons.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="./emotes/jquery.cssemoticons.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript" src="./scroll/jquery.tinyscrollbar.js"></script>
+    <link rel="stylesheet" href="./scroll/tinyscrollbar.css">
+
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #scrollbar1 {
+            border: 2px solid black;
+            border-radius: 10px;
+            margin: 3vw 0 0 3vw;
+            padding: 5px;
+        }
+
+        #input {
+            width: 94vw;
+            height: 20px;
+            margin: 1vw 0 0 3vw;
+            border: 2px solid black;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body onload="alp()">
+    <div id="scrollbar1">
+        <div class="scrollbar">
+            <div class="track">
+                <div class="thumb">
+                    <div class="end"></div>
+                </div>
+            </div>
+        </div>
+        <div class="viewport">
+            <div id="textarea" class="overview"></div>
+        </div>
+    </div>
+    <input type="text" id="input">
+</body>
+
+<script>
+    $(document).ready(function () {
+        $("#scrollbar1").tinyscrollbar();
+    });
+
+    var nick = window.prompt("Wpisz nick")
+    var color = getColor()
+    uid = 0
+    $("#input").on('keyup', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            let val = $("#input").val()
+            if (val == "/color") {
+                color = getColor()
+                $("#input").val("")
+                $.ajax({
+                    method: "POST",
+                    url: "message.php",
+                    data: { color: encodeURIComponent("#ff0000"), nick: encodeURIComponent("system message"), message: encodeURIComponent("*** user " + nick + " changed color ***"), uid: encodeURIComponent(uid) }
+                })
+                uid++
+            } else if (val.substr(0, 6) == "/nick ") {
+                let old = nick
+                nick = val.substr(6, val.length - 6)
+                $("#input").val("")
+                $.ajax({
+                    method: "POST",
+                    url: "message.php",
+                    data: { color: encodeURIComponent("#ff0000"), nick: encodeURIComponent("system message"), message: encodeURIComponent("*** user " + old + " changed nickname to " + nick + " ***"), uid: encodeURIComponent(uid) }
+                })
+                uid++
+            } else if (val == "/quit") {
+                $.ajax({
+                    method: "POST",
+                    url: "message.php",
+                    data: { color: encodeURIComponent("#ff0000"), nick: encodeURIComponent("system message"), message: encodeURIComponent("*** user " + nick + " quit ***"), uid: encodeURIComponent(uid) }
+                })
+                uid++
+                window.location.reload()
+            } else {
+                let message = $("#input").val()
+                $("#input").val("")
+                $.ajax({
+                    method: "POST",
+                    url: "message.php",
+                    data: { color: encodeURIComponent(color), nick: encodeURIComponent(nick), message: encodeURIComponent(message), uid: encodeURIComponent(uid) }
+                })
+                uid++
+            }
+        }
+    });
+
+    function getColor() {
+        let hex = "0123456789abcdef"
+        return "#" + hex[getRand()] + hex[getRand()] + hex[getRand()] + hex[getRand()] + hex[getRand()] + hex[getRand()]
+    }
+
+    function getRand() {
+        return Math.floor(Math.random() * 16)
+    }
+
+    async function alp() {
+        let res = await fetch("ajax.php")
+        let text = await res.text()
+        if (res.ok && text != "") {
+            let msg = JSON.parse(decodeURIComponent(text))
+            let div = $("<div>")
+            let time = $("<span>").text("[ " + msg.time.substr(0, 5) + "] ")
+            div.append(time)
+            let nick = $("<span>").text("<@" + msg.nick + "> ")
+            nick.css("color", msg.color)
+            div.append(nick)
+            let message = ""
+            if (msg.nick == "system message")
+                message = $("<span>").text(msg.message)
+            else
+                message = $("<span>").text(msg.message).emoticonize()
+            div.append(message)
+            $("#textarea").append(div)
+
+            $('#scrollbar1').data("plugin_tinyscrollbar").update("bottom");
+
+            console.log("success", msg);
+        }
+        alp()
+    }
+
+    // function alp() {
+    //     $.ajax({
+    //         url: "ajax.php",
+    //         dataType: "json"
+    //     })
+    //         .done(function (msg) {
+    //             let div = $("<div>")
+    //             div.text(msg.time + "  " + msg.color + "  " + msg.nick + "  " + msg.message)
+    //             $("#textarea").append(div)
+    //             console.log("success", msg);
+    //         })
+    //         .always(function () {
+    //             console.log("complete");
+    //             alp();
+    //         })
+    // }
+</script>
+
+</html>
