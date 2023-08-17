@@ -19,20 +19,15 @@ Explore the [live demo](https://piechnik.ct8.pl/irc/) of the irc app.
 
 To get a copy of this project up and running on your local machine, follow these steps:
 
-1. Clone the repository: 
+1. Clone the repository to the place where the php interpreter is running (e.g. xampp - htdocs) : 
 ```
 git clone https://github.com/piechnikk/irc.git
 ```
 2. Create a MySQL database named `irc` and import `irc.sql`
 
-3. Navigate to the project directory: 
-```
-cd irc
-```
-
 ## Usage
 
-Open the `index.html` file in your preferred web browser to view the app.
+Open your preferred web browser and navigate to `http://localhost/irc` (address can be different depending on the php interpreter used) to access the running application.
 
 #### COMMANDS
 - /color - change user color
